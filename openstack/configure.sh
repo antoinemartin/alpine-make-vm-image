@@ -22,8 +22,10 @@ cat > /etc/network/interfaces <<-EOF
 	iface eth0 inet dhcp
 EOF
 
+# FIXME: remove root and alpine password
 step 'Set cloud configuration'
-sed -e '/ssh_pwauth:/ s/0/no/' \
+sed -e '/disable_root:/ s/true/false/' \
+	-e '/ssh_pwauth:/ s/0/no/' \
     -e '/name: alpine/a \     passwd: $6$f/s5NNuDU2omItlc$uufEZ8h47YbnAY07PqO.J/sU0QVLMDZZmjJxw06t5pcS3x76IB61JXPbvqY8E2IiAGqUmNC4B6mbHnmbtu.qq1' \
     -e '/lock_passwd:/ s/True/False/' \
     -e '/shell:/ s#/bin/ash#/bin/zsh#' \
@@ -48,7 +50,7 @@ sed -Ei \
 step 'Enabling zsh'
 cp -f /usr/share/oh-my-zsh/templates/zshrc.zsh-template /root/.zshrc
 chmod +x /root/.zshrc
-sed -ie '/^alpine:/ s#:/bin/.*$$#:/bin/zsh#' $@/etc/passwd
+sed -ie '/^root:/ s#:/bin/.*$#:/bin/zsh#' /etc/passwd
 
 step 'Enable services'
 rc-update add acpid default
