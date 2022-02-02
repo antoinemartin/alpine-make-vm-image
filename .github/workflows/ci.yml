@@ -18,8 +18,25 @@ jobs:
         run: |
           sudo ./alpine-make-vm-image \
               --image-format qcow2 \
-              --image-size 2G \
-              --repositories-file example/repositories \
-              --packages "$(cat example/packages)" \
+              --image-size 1G \
+              --repositories-file openstack/repositories \
+              --packages "$(cat openstack/packages)" \
               --script-chroot \
-              alpine-virthardened-$(date +%Y-%m-%d).qcow2 -- ./example/configure.sh
+              alpine-openstack.qcow2 -- ./openstack/configure.sh
+          sha256sum alpine-openstack.qcow2 | cut -d' ' -f 1 > alpine-openstack.qcow2.sha256
+      - name: Upload root fs artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: alpine-openstack.qcow2
+          path: "${{ github.workspace }}/alpine-openstack.qcow2"
+      - name: Make Development release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            alpine-openstack.qcow2
+            alpine-openstack.qcow2.sha256
